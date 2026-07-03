@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(command -v python3)",
+      "Bash(command -v curl)",
+      "Bash(command -v git)",
+      "Bash(curl -sI https://nodejs.org)",
+      "Bash(xcode-select -p)",
+      "Bash(sw_vers)",
+      "Bash(curl -s https://nodejs.org/dist/index.json)",
+      "Bash(python3 -c ' *)",
+      "Bash(mkdir -p /private/tmp/claude-501/-Users-liorbenavi-vision/a90beea2-1d33-4f23-b7d8-f19bdf2a31b2/scratchpad/node)",
+      "Bash(curl -# -L -o node.tar.gz https://nodejs.org/dist/v24.18.0/node-v24.18.0-darwin-arm64.tar.gz)",
+      "Bash(mkdir -p /usr/local/bin)",
+      "Read(//usr/local/**)",
+      "Bash(npm -v)",
+      "Bash(mv /Users/liorbenavi/.zshrc /Users/liorbenavi/.zshenv *)",
+      "Bash(env)",
+      "Bash(zsh -c 'echo $PATH')",
+      "Bash(/bin/zsh -c 'node -v && npm -v')",
+      "Bash(rm -f /Users/liorbenavi/.zshenv)",
+      "Bash(mv __TRACKED_VAR__/node-v24.18.0-darwin-arm64 /Users/liorbenavi/.local/node)"
+    ]
+  }
+}
