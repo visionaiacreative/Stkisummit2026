@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import { content } from "@/lib/content";
+import { useFrameSequence } from "@/lib/useFrameSequence";
+import FrameLoadIndicator from "@/components/ui/FrameLoadIndicator";
 
 const START_THRESHOLD = 0.02;
 const STEP_THRESHOLDS = [0.15, 0.28, 0.4];
@@ -43,13 +45,6 @@ function getMobileVideoOpacity(step: number, progress: number) {
   return Math.max(0, 1 - fade);
 }
 
-function introItemMotion(step: number, itemStep: number) {
-  return {
-    opacity: step === itemStep ? 1 : 0,
-    y: step === itemStep ? 0 : step < itemStep ? 16 : -16,
-  };
-}
-
 export default function ImpactIntro() {
   const { lang } = useLanguage();
   const t = content.impact[lang];
@@ -65,11 +60,25 @@ export default function ImpactIntro() {
 
   const [step, setStep] = useState(-1);
 
+  // hero-2 frames only render on desktop (mobile uses the video below), so
+  // skip loading them entirely on mobile viewports, matching prior behavior.
+  const [desktopSequenceEnabled] = useState(
+    () => typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches,
+  );
+  const { progress: loadProgress, ready: framesReady, frontierRef } = useFrameSequence({
+    frameSrc,
+    totalFrames: TOTAL_FRAMES,
+    containerRef,
+    rootMargin: "600px 0px",
+    enabled: desktopSequenceEnabled,
+  });
+
   function applyFrame(scrollProgress: number) {
     const img = imgRef.current;
     if (!img) return;
     const frameProgress = Math.min(1, Math.max(0, (scrollProgress - FRAMES_START) / (1 - FRAMES_START)));
-    const frameIndex = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(frameProgress * (TOTAL_FRAMES - 1)) + 1));
+    const targetFrame = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(frameProgress * (TOTAL_FRAMES - 1)) + 1));
+    const frameIndex = Math.min(targetFrame, frontierRef.current);
     if (frameIndex !== currentFrameRef.current) {
       currentFrameRef.current = frameIndex;
       img.src = frameSrc(frameIndex);
@@ -81,8 +90,10 @@ export default function ImpactIntro() {
     applyFrame(latest);
   });
 
-  // Mobile: one continuous pinned reveal — welcome, STKI Summit title, then the stat lines —
-  // each swapping via fade in the same spot instead of scrolling away.
+  // Mobile hero: temporarily removed while the intro is rebuilt piece by piece.
+  // The video + its autoplay/scroll-lock logic is preserved below, commented out,
+  // to be restored once the surrounding content is back in place.
+  /*
   const mobileIntroRef = useRef<HTMLDivElement>(null);
   const [mobileIntroStep, setMobileIntroStep] = useState(0);
 
@@ -91,12 +102,9 @@ export default function ImpactIntro() {
     offset: ["start start", "end end"],
   });
 
-  // Mobile: hero video autoplays once when it comes into view, then fades out as the user
-  // keeps scrolling (sharing the same continuous pinned range as the text above).
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const [mobileVideoOpacity, setMobileVideoOpacity] = useState(0);
   const [videoLocked, setVideoLocked] = useState(false);
-  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const videoPlayedRef = useRef(false);
 
   useMotionValueEvent(mobileIntroScrollYProgress, "change", (latest) => {
@@ -117,7 +125,6 @@ export default function ImpactIntro() {
     video.play().catch(() => {});
 
     function release() {
-      setShowScrollIndicator(true);
       setVideoLocked(false);
     }
     function handleTimeUpdate() {
@@ -146,131 +153,91 @@ export default function ImpactIntro() {
     };
   }, [videoLocked]);
 
-  useEffect(() => {
-    if (window.matchMedia("(max-width: 767px)").matches) return;
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const preload = new window.Image();
-      preload.src = frameSrc(i);
-    }
-  }, []);
+  Preserved mobile JSX (the whole pinned reveal, video included), to restore once
+  the rebuilt content is ready to take its place:
+
+  <div ref={mobileIntroRef} className="relative bg-paper px-6 md:hidden" style={{ height: "530vh" }}>
+    <div className="sticky top-0 flex min-h-screen flex-col items-center justify-center gap-10 text-center">
+      <div className="flex flex-col items-center gap-3">
+        <span className="text-xs font-semibold tracking-[0.3em] text-ink/50 uppercase">Welcome to</span>
+        <span className="text-2xl font-bold tracking-wide text-ink">STKI Summit 2026</span>
+      </div>
+
+      <div className="relative flex h-56 w-full items-center justify-center">
+        <motion.div
+          animate={{ opacity: mobileVideoOpacity }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="absolute w-full max-w-sm opacity-0"
+        >
+          <video
+            ref={mobileVideoRef}
+            src="/videos/hero-mobile.mp4"
+            muted
+            playsInline
+            preload="auto"
+            className="mix-blend-multiply w-full"
+          />
+        </motion.div>
+      </div>
+
+      <div className="flex flex-col items-center gap-3 text-ink/40">
+        <span className="text-xs font-semibold tracking-[0.3em] uppercase">Scroll to explore</span>
+        <svg width="22" height="34" viewBox="0 0 22 34" fill="none">
+          <rect x="1" y="1" width="20" height="32" rx="10" stroke="currentColor" strokeWidth="1.6" />
+          <motion.circle
+            cx="11"
+            r="1.8"
+            fill="currentColor"
+            animate={{ cy: [8, 21], opacity: [1, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </svg>
+        <div className="flex flex-col -space-y-1">
+          {[0, 1].map((i) => (
+            <motion.svg
+              key={i}
+              width="14"
+              height="8"
+              viewBox="0 0 14 8"
+              fill="none"
+              animate={{ opacity: [0.15, 1, 0.15] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
+            >
+              <path
+                d="M1 1l6 6 6-6"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </motion.svg>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+  */
 
   return (
     <div id="intro">
-      {/* Mobile: one pinned reveal for welcome, STKI Summit title, the stat lines, then the hero video — all in the same spot */}
-      <div ref={mobileIntroRef} className="relative bg-paper px-6 md:hidden" style={{ height: "530vh" }}>
-        <div className="sticky top-0 flex min-h-screen items-center justify-center text-center">
-          <div className="relative flex h-56 w-full items-center justify-center">
-            <motion.span
-              animate={introItemMotion(mobileIntroStep, 0)}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="absolute text-xs font-semibold tracking-[0.3em] whitespace-nowrap text-ink/50 uppercase"
-            >
-              Welcome to
-            </motion.span>
-
-            <motion.div
-              animate={{
-                opacity: mobileIntroStep === 1 ? 1 : 0,
-                y: mobileIntroStep === 1 ? 0 : mobileIntroStep < 1 ? 16 : -16,
-              }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="absolute flex flex-col items-center gap-3"
-            >
-              <span className="text-2xl font-bold whitespace-nowrap tracking-wide text-ink">STKI Summit 2026</span>
-              <span className="h-1 w-10 rounded-full bg-brand-red" />
-            </motion.div>
-
-            {/* Stat lines: accumulate and stay visible together, then fade out as a group before the video */}
-            <div className="absolute flex flex-col items-center gap-4">
-              <motion.p
-                animate={{
-                  opacity: mobileIntroStep >= 2 && mobileIntroStep <= 4 ? 1 : 0,
-                  y: mobileIntroStep >= 2 && mobileIntroStep <= 4 ? 0 : 16,
-                }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="text-4xl leading-tight font-semibold text-ink sm:text-5xl"
-              >
-                <span className="text-brand-red">34</span> {t.yearsLabel}
-              </motion.p>
-
-              <motion.p
-                animate={{
-                  opacity: mobileIntroStep >= 3 && mobileIntroStep <= 4 ? 1 : 0,
-                  y: mobileIntroStep >= 3 && mobileIntroStep <= 4 ? 0 : 16,
-                }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="text-4xl leading-tight font-semibold text-ink sm:text-5xl"
-              >
-                <span className="text-brand-red">1,500</span> {t.decisionMakersLabel}
-              </motion.p>
-
-              <motion.p
-                animate={{
-                  opacity: mobileIntroStep === 4 ? 1 : 0,
-                  y: mobileIntroStep === 4 ? 0 : mobileIntroStep < 4 ? 16 : -16,
-                }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="text-5xl leading-tight font-extrabold text-ink sm:text-6xl"
-              >
-                {t.oneSummit}
-              </motion.p>
-            </div>
-
-            <motion.div
-              animate={{ opacity: mobileVideoOpacity }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="absolute w-full max-w-sm"
-            >
-              <video
-                ref={mobileVideoRef}
-                src="/videos/hero-mobile.mp4"
-                muted
-                playsInline
-                preload="auto"
-                className="mix-blend-multiply w-full"
-              />
-            </motion.div>
-          </div>
-
-          <motion.div
-            animate={{ opacity: showScrollIndicator && mobileIntroStep === 5 ? 1 : 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="absolute bottom-10 flex flex-col items-center gap-3 text-ink/40"
-          >
-            <span className="text-xs font-semibold tracking-[0.3em] uppercase">Scroll to explore</span>
-            <svg width="22" height="34" viewBox="0 0 22 34" fill="none">
-              <rect x="1" y="1" width="20" height="32" rx="10" stroke="currentColor" strokeWidth="1.6" />
-              <motion.circle
-                cx="11"
-                r="1.8"
-                fill="currentColor"
-                animate={{ cy: [8, 21], opacity: [1, 0] }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </svg>
-            <div className="flex flex-col -space-y-1">
-              {[0, 1].map((i) => (
-                <motion.svg
-                  key={i}
-                  width="14"
-                  height="8"
-                  viewBox="0 0 14 8"
-                  fill="none"
-                  animate={{ opacity: [0.15, 1, 0.15] }}
-                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
-                >
-                  <path
-                    d="M1 1l6 6 6-6"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </motion.svg>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+      {/* Mobile: simple welcome intro, no scroll-jacking, no stats section. */}
+      <div className="flex h-dvh flex-col items-center justify-center gap-3 bg-paper px-6 text-center md:hidden">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
+          className="text-xs font-semibold tracking-[0.3em] uppercase text-ink/50"
+        >
+          Welcome to
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 1.7 }}
+          className="text-2xl font-bold tracking-wide text-ink"
+        >
+          STKI Summit 2026
+        </motion.p>
       </div>
 
       {/* Desktop: scroll-jacked pinned reveal */}
@@ -324,6 +291,7 @@ export default function ImpactIntro() {
                 WebkitMaskComposite: "source-in",
               }}
             />
+            <FrameLoadIndicator progress={loadProgress} visible={step === 3 && !framesReady} />
           </motion.div>
         </div>
 

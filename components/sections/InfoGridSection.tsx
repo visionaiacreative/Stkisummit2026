@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import { content } from "@/lib/content";
+import { useFrameSequence } from "@/lib/useFrameSequence";
+import FrameLoadIndicator from "@/components/ui/FrameLoadIndicator";
 
 const TOTAL_FRAMES = 999;
 const CACHE_BUST = "v2";
@@ -16,6 +18,7 @@ export default function InfoGridSection() {
   const { lang } = useLanguage();
   const t = content.infoGrid[lang];
 
+  const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const currentFrameRef = useRef(0);
@@ -25,10 +28,21 @@ export default function InfoGridSection() {
     offset: ["start start", "end end"],
   });
 
+  // Observed off the outer section (always in the layout flow on both mobile
+  // and desktop, unlike the two responsive-hidden containers below) so the
+  // sequence starts loading a couple of screens before either variant is reached.
+  const { progress: loadProgress, ready: framesReady, frontierRef } = useFrameSequence({
+    frameSrc,
+    totalFrames: TOTAL_FRAMES,
+    containerRef: sectionRef,
+    rootMargin: "1000px 0px",
+  });
+
   function applyFrame(progress: number) {
     const img = imgRef.current;
     if (!img) return;
-    const frameIndex = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(progress * (TOTAL_FRAMES - 1)) + 1));
+    const targetFrame = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(progress * (TOTAL_FRAMES - 1)) + 1));
+    const frameIndex = Math.min(targetFrame, frontierRef.current);
     if (frameIndex !== currentFrameRef.current) {
       currentFrameRef.current = frameIndex;
       img.src = frameSrc(frameIndex);
@@ -52,7 +66,8 @@ export default function InfoGridSection() {
   function applyMobileFrame(progress: number) {
     const img = mobileImgRef.current;
     if (!img) return;
-    const frameIndex = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(progress * (TOTAL_FRAMES - 1)) + 1));
+    const targetFrame = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(progress * (TOTAL_FRAMES - 1)) + 1));
+    const frameIndex = Math.min(targetFrame, frontierRef.current);
     if (frameIndex !== mobileCurrentFrameRef.current) {
       mobileCurrentFrameRef.current = frameIndex;
       img.src = frameSrc(frameIndex);
@@ -63,15 +78,8 @@ export default function InfoGridSection() {
     applyMobileFrame(latest);
   });
 
-  useEffect(() => {
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const preload = new window.Image();
-      preload.src = frameSrc(i);
-    }
-  }, []);
-
   return (
-    <section id="info" className="relative bg-paper">
+    <section id="info" ref={sectionRef} className="relative bg-paper">
       {/* Mobile: text fades in, then its own pinned scroll-scrub reveal of the frame sequence */}
       <div className="flex flex-col items-center gap-6 px-6 pt-20 text-center md:hidden">
         <motion.div
@@ -87,9 +95,17 @@ export default function InfoGridSection() {
         </motion.div>
       </div>
 
-      <div ref={mobileContainerRef} className="relative bg-paper md:hidden" style={{ height: "180vh" }}>
-        <div className="sticky top-0 flex min-h-screen items-center justify-center px-6">
-          <img ref={mobileImgRef} src={frameSrc(1)} alt="" className="w-full max-w-md" />
+      <div ref={mobileContainerRef} className="relative bg-paper md:hidden" style={{ height: "106dvh" }}>
+        <div className="sticky top-0 flex h-dvh items-center justify-center px-6">
+          <div className="relative w-full max-w-md overflow-hidden" style={{ height: "50vh" }}>
+            <img
+              ref={mobileImgRef}
+              src={frameSrc(1)}
+              alt=""
+              className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2"
+            />
+            <FrameLoadIndicator progress={loadProgress} visible={!framesReady} />
+          </div>
         </div>
       </div>
 
@@ -102,8 +118,9 @@ export default function InfoGridSection() {
             <p className="text-lg leading-relaxed text-ink/60 md:text-xl">{t.body}</p>
           </div>
 
-          <div className="w-full max-w-md md:max-w-none md:min-w-0 md:flex-1">
+          <div className="relative w-full max-w-md md:max-w-none md:min-w-0 md:flex-1">
             <img ref={imgRef} src={frameSrc(1)} alt="" className="h-auto w-full" />
+            <FrameLoadIndicator progress={loadProgress} visible={!framesReady} />
           </div>
         </div>
       </div>

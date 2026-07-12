@@ -5,6 +5,15 @@ import Lenis from "lenis";
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    // Browsers restore the previous scroll position on refresh by default,
+    // which flashes whatever pinned section that position mapped to (e.g. the
+    // desktop frame sequence) before anything here has a chance to run. Force
+    // every load to start at the top instead.
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
