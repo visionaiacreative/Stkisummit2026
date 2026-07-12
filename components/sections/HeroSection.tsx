@@ -111,13 +111,13 @@ export default function HeroSection() {
   const bar = content.eventBar[lang];
 
   return (
-    <section id="hero" className="relative flex min-h-screen flex-col bg-paper">
+    <section id="hero" className="relative flex min-h-screen flex-col bg-paper px-6 md:px-16">
       <motion.div
         variants={stagger}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.4 }}
-        className="flex flex-1 flex-col items-start justify-center gap-6 px-6 pt-20 pb-16 md:pt-24 md:pr-16 md:pb-16 md:pl-[250px]"
+        className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-start justify-center gap-6 pt-20 pb-16 md:pt-24 md:pb-16"
       >
         <motion.span
           variants={fadeUp}
@@ -128,7 +128,7 @@ export default function HeroSection() {
 
         <motion.h1
           variants={headlineContainer}
-          className="heading relative max-w-6xl leading-tight text-ink"
+          className="relative max-w-none text-2xl leading-tight font-medium text-ink sm:text-3xl lg:text-4xl"
         >
           {t.headline.split(" ").map((word, i, arr) => (
             <span key={i}>
@@ -158,7 +158,7 @@ export default function HeroSection() {
 
         <motion.p
           variants={paragraphContainer}
-          className="max-w-4xl text-xl leading-loose text-ink/70 md:text-2xl [text-align:justify]"
+          className="max-w-none text-lg leading-loose text-ink/70 md:text-xl [text-align:justify]"
         >
           <span className="block overflow-hidden pb-0.5">
             <motion.span variants={lineReveal} className="block">

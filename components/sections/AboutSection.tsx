@@ -81,13 +81,13 @@ export default function AboutSection() {
   const inView = useInView(rowRef, { once: true, amount: 0.4 });
 
   return (
-    <section id="about" className="bg-paper px-6 py-24 md:py-32 md:pr-16 md:pl-[250px]">
+    <section id="about" className="bg-paper px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto flex max-w-5xl flex-col gap-16">
         <SectionHeading
           title={t.title}
           body={t.body}
           noWrapTitle
-          bodyClassName="max-w-4xl text-lg leading-loose text-ink/60 md:text-xl [text-align:justify]"
+          bodyClassName="max-w-none text-lg leading-loose text-ink/60 md:text-xl [text-align:justify]"
         />
 
         <div ref={rowRef} className="grid grid-cols-1 gap-8 sm:grid-cols-3">
