@@ -7,8 +7,8 @@ export const STKI_WHATSAPP_URL = "https://wa.me/972547000027";
 export const STKI_PHONE = "0547000027";
 
 export const VISION_STUDIO_EMAIL = "visionaiacreative@gmail.com";
-export const VISION_STUDIO_PHONE = "0527442525";
-export const VISION_STUDIO_WHATSAPP_URL = "https://wa.me/972527442525";
+export const VISION_STUDIO_PHONE = "0523894499";
+export const VISION_STUDIO_WHATSAPP_URL = "https://wa.me/972523894499";
 export const VISION_STUDIO_INSTAGRAM_URL =
   "https://www.instagram.com/visionaicreative?igsh=NzNiaWYyZW5idmMw&utm_source=qr";
 
@@ -200,7 +200,6 @@ export const content = {
       eyebrow: "דברו איתנו",
       ctaLabel: "לפרטים וליצירת קשר",
       whatsappLabel: "וואטסאפ",
-      phoneLabel: "טלפון",
       emailLabel: "מייל",
     },
     en: {
@@ -211,25 +210,16 @@ export const content = {
       eyebrow: "Talk to us",
       ctaLabel: "Details & Get in Touch",
       whatsappLabel: "WhatsApp",
-      phoneLabel: "Phone",
       emailLabel: "Email",
     },
   },
   visionCredit: {
     he: {
       builtBy: "האתר נבנה על ידי",
-      instagramLabel: "אינסטגרם",
-      emailLabel: "מייל",
-      whatsappLabel: "וואטסאפ",
-      phoneLabel: "טלפון",
       copyright: "© 2026 VISION AI STUDIO. כל הזכויות שמורות.",
     },
     en: {
       builtBy: "Site built by",
-      instagramLabel: "Instagram",
-      emailLabel: "Email",
-      whatsappLabel: "WhatsApp",
-      phoneLabel: "Phone",
       copyright: "© 2026 VISION AI STUDIO. All rights reserved.",
     },
   },

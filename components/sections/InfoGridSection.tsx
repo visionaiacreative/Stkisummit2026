@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useRef, useState } from "react";
+import { useScroll, useMotionValueEvent } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import { content } from "@/lib/content";
 import { useFrameSequence } from "@/lib/useFrameSequence";
@@ -28,14 +28,16 @@ export default function InfoGridSection() {
     offset: ["start start", "end end"],
   });
 
-  // Observed off the outer section (always in the layout flow on both mobile
-  // and desktop, unlike the two responsive-hidden containers below) so the
-  // sequence starts loading a couple of screens before either variant is reached.
+  // The frame sequence image is desktop-only; skip loading it on mobile entirely.
+  const [desktopSequenceEnabled] = useState(
+    () => typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches,
+  );
   const { progress: loadProgress, ready: framesReady, frontierRef } = useFrameSequence({
     frameSrc,
     totalFrames: TOTAL_FRAMES,
     containerRef: sectionRef,
     rootMargin: "1000px 0px",
+    enabled: desktopSequenceEnabled,
   });
 
   function applyFrame(progress: number) {
@@ -53,60 +55,23 @@ export default function InfoGridSection() {
     applyFrame(latest);
   });
 
-  // Mobile: its own pinned scrub, independent of the desktop container above.
-  const mobileContainerRef = useRef<HTMLDivElement>(null);
-  const mobileImgRef = useRef<HTMLImageElement>(null);
-  const mobileCurrentFrameRef = useRef(0);
-
-  const { scrollYProgress: mobileScrollYProgress } = useScroll({
-    target: mobileContainerRef,
-    offset: ["start start", "end end"],
-  });
-
-  function applyMobileFrame(progress: number) {
-    const img = mobileImgRef.current;
-    if (!img) return;
-    const targetFrame = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(progress * (TOTAL_FRAMES - 1)) + 1));
-    const frameIndex = Math.min(targetFrame, frontierRef.current);
-    if (frameIndex !== mobileCurrentFrameRef.current) {
-      mobileCurrentFrameRef.current = frameIndex;
-      img.src = frameSrc(frameIndex);
-    }
-  }
-
-  useMotionValueEvent(mobileScrollYProgress, "change", (latest) => {
-    applyMobileFrame(latest);
-  });
-
   return (
     <section id="info" ref={sectionRef} className="relative bg-paper">
-      {/* Mobile: text fades in, then its own pinned scroll-scrub reveal of the frame sequence */}
-      <div className="flex flex-col items-center gap-6 px-6 pt-20 text-center md:hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="flex w-full max-w-md flex-col items-center gap-5"
-        >
-          <h2 className="heading text-ink">{t.title}</h2>
-          <span className="h-1 w-12 rounded-full bg-brand-red" />
-          <p className="text-lg leading-relaxed text-ink/60">{t.body}</p>
-        </motion.div>
+      {/* Mobile: title + body, then the booth video (background cleaned to white) */}
+      <div className="flex flex-col items-center gap-5 px-6 py-20 text-center md:hidden">
+        <h2 className="heading text-ink">{t.title}</h2>
+        <span className="h-1 w-12 rounded-full bg-brand-red" />
+        <p className="text-lg leading-relaxed text-ink/60">{t.body}</p>
       </div>
-
-      <div ref={mobileContainerRef} className="relative bg-paper md:hidden" style={{ height: "106dvh" }}>
-        <div className="sticky top-0 flex h-dvh items-center justify-center px-6">
-          <div className="relative w-full max-w-md overflow-hidden" style={{ height: "50vh" }}>
-            <img
-              ref={mobileImgRef}
-              src={frameSrc(1)}
-              alt=""
-              className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2"
-            />
-            <FrameLoadIndicator progress={loadProgress} visible={!framesReady} />
-          </div>
-        </div>
+      <div className="px-6 pb-0 md:hidden">
+        <video
+          src="/videos/sponsorship-booth-white.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full"
+        />
       </div>
 
       {/* Desktop: scroll-jacked scrubbed reveal */}

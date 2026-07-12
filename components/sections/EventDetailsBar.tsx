@@ -32,20 +32,6 @@ function WhatsAppIcon() {
   );
 }
 
-function PhoneIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M4.5 4.5c0-.55.45-1 1-1h2.4c.47 0 .87.32.97.78l.8 3.6a1 1 0 01-.28.95l-1.6 1.6a13.5 13.5 0 006.28 6.28l1.6-1.6a1 1 0 01.95-.28l3.6.8c.46.1.78.5.78.97v2.4c0 .55-.45 1-1 1C10.7 20 4 13.3 4 5.5c0-.35 0-.65 0-1z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function MailIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -74,14 +60,6 @@ export default function EventDetailsBar() {
       label: t.whatsappLabel,
       value: formatPhone(STKI_PHONE),
       Icon: WhatsAppIcon,
-    },
-    {
-      key: "phone",
-      href: `tel:${STKI_PHONE}`,
-      external: false,
-      label: t.phoneLabel,
-      value: formatPhone(STKI_PHONE),
-      Icon: PhoneIcon,
     },
     {
       key: "email",

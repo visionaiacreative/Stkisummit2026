@@ -4,10 +4,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 import {
   content,
   VISION_STUDIO_EMAIL,
-  VISION_STUDIO_PHONE,
   VISION_STUDIO_WHATSAPP_URL,
   VISION_STUDIO_INSTAGRAM_URL,
-  formatPhone,
 } from "@/lib/content";
 
 function MailIcon() {
@@ -37,63 +35,40 @@ function InstagramIcon() {
   );
 }
 
-function PhoneIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
-      <path
-        d="M4.5 4.5c0-.55.45-1 1-1h2.4c.47 0 .87.32.97.78l.8 3.6a1 1 0 01-.28.95l-1.6 1.6a13.5 13.5 0 006.28 6.28l1.6-1.6a1 1 0 01.95-.28l3.6.8c.46.1.78.5.78.97v2.4c0 .55-.45 1-1 1C10.7 20 4 13.3 4 5.5c0-.35 0-.65 0-1z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function VisionCredit() {
   const { lang } = useLanguage();
   const t = content.visionCredit[lang];
 
+  // Studio contact labels stay in English regardless of site language.
   const rows = [
+    {
+      key: "whatsapp",
+      Icon: WhatsAppIcon,
+      label: "WhatsApp",
+      href: VISION_STUDIO_WHATSAPP_URL,
+      external: true,
+    },
     {
       key: "instagram",
       Icon: InstagramIcon,
-      label: t.instagramLabel,
-      value: "@visionaicreative",
+      label: "Instagram",
       href: VISION_STUDIO_INSTAGRAM_URL,
       external: true,
     },
     {
       key: "email",
       Icon: MailIcon,
-      label: t.emailLabel,
+      label: "Mail",
       value: VISION_STUDIO_EMAIL,
       href: `mailto:${VISION_STUDIO_EMAIL}`,
-      external: false,
-    },
-    {
-      key: "whatsapp",
-      Icon: WhatsAppIcon,
-      label: t.whatsappLabel,
-      value: formatPhone(VISION_STUDIO_PHONE),
-      href: VISION_STUDIO_WHATSAPP_URL,
-      external: true,
-    },
-    {
-      key: "phone",
-      Icon: PhoneIcon,
-      label: t.phoneLabel,
-      value: formatPhone(VISION_STUDIO_PHONE),
-      href: `tel:${VISION_STUDIO_PHONE}`,
       external: false,
     },
   ];
 
   return (
-    <section className="bg-ink px-6 py-16 text-paper md:px-16 md:py-20">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row md:items-center md:justify-between md:gap-12">
-        <div dir="ltr" className="grid grid-cols-2 gap-x-8 gap-y-5 sm:flex sm:flex-col">
+    <section className="bg-ink px-6 py-10 text-paper md:px-16 md:py-14">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 md:flex-row md:items-center md:justify-between md:gap-12">
+        <div dir="ltr" className="order-2 flex flex-col items-start gap-4 md:order-1">
           {rows.map(({ key, Icon, label, value, href, external }) => (
             <a
               key={key}
@@ -105,37 +80,50 @@ export default function VisionCredit() {
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-paper/15 text-paper/70 transition-colors group-hover:border-paper/40 group-hover:text-white">
                 <Icon />
               </span>
-              <span className="flex min-w-0 flex-col items-start">
-                <span className="text-xs text-paper/45">{label}</span>
-                <span className="w-full text-sm font-medium break-all text-paper/85 transition-colors group-hover:text-white">
-                  {value}
+              {value ? (
+                <span className="flex min-w-0 flex-col items-start">
+                  <span className="text-xs text-paper/45">{label}</span>
+                  <span className="w-full text-sm font-medium break-words text-paper/85 transition-colors group-hover:text-white">
+                    {value.includes("@") ? (
+                      <>
+                        {value.split("@")[0]}@<wbr />
+                        {value.split("@")[1]}
+                      </>
+                    ) : (
+                      value
+                    )}
+                  </span>
                 </span>
-              </span>
+              ) : (
+                <span className="text-sm font-medium text-paper/85 transition-colors group-hover:text-white">
+                  {label}
+                </span>
+              )}
             </a>
           ))}
         </div>
 
-        <div className="hidden h-36 w-px shrink-0 bg-paper/10 md:block" />
+        <div className="order-2 hidden h-36 w-px shrink-0 bg-paper/10 md:block" />
 
-        <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-start">
+        <div className="order-1 flex flex-col items-center gap-2 text-center md:order-3 md:items-start md:text-start">
           <span className="text-[13px] tracking-[0.2em] text-paper/40 uppercase">{t.builtBy}</span>
 
           <span dir="ltr" className="text-2xl font-bold tracking-wide md:text-3xl">
             VISION AI STUDIO<sup className="text-sm">©</sup>
           </span>
 
-          <div dir="ltr" className="mt-1 flex flex-col items-center gap-1.5 md:items-start">
+          <div dir="ltr" className="mt-1 flex flex-col items-center gap-1 md:items-start">
             <span className="text-xs font-semibold tracking-[0.25em] text-paper/50 uppercase">
               Luxury Digital Studio
             </span>
             <span className="text-sm text-paper/60">AI • Web • Social</span>
-            <span className="my-1.5 h-1 w-10 rounded-full bg-brand-red" />
+            <span className="my-1 h-1 w-10 rounded-full bg-brand-red" />
             <span className="text-sm font-medium text-paper/80">Tell us your vision</span>
           </div>
         </div>
       </div>
 
-      <div className="relative mx-auto mt-14 max-w-5xl pt-6">
+      <div className="relative mx-auto mt-8 max-w-5xl pt-5">
         <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-red/50 to-transparent" />
         <p dir="ltr" className="text-center text-xs tracking-[0.15em] text-paper/35">
           {t.copyright}

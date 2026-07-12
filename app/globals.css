@@ -34,14 +34,18 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif;
-  overflow-x: hidden;
+  /* overflow-x: clip (not hidden) blocks horizontal scroll/bounce without
+     turning body into a scroll container, which is what breaks
+     position: sticky on iOS Safari. */
+  overflow-x: clip;
 }
 
 /* Mobile only: block horizontal scroll/bounce. Scoped to this breakpoint so
-   it can never again interfere with desktop's position: sticky. */
+   it can never again interfere with desktop's position: sticky. Uses clip
+   rather than hidden for the same iOS Safari sticky reason as body above. */
 @media (max-width: 767px) {
   html {
-    overflow-x: hidden;
+    overflow-x: clip;
     overscroll-behavior-x: none;
   }
 }

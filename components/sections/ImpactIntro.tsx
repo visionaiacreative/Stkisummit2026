@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useScroll, useMotionValueEvent } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import { content } from "@/lib/content";
 import { useFrameSequence } from "@/lib/useFrameSequence";
@@ -93,11 +93,21 @@ export default function ImpactIntro() {
     setMobileStep(getMobileStep(latest));
   });
 
+  // Mobile: plain (non-scroll-jacked) video after the stat reveal. Plays once
+  // as soon as it scrolls into view and freezes on its last frame (no loop).
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoInView = useInView(mobileVideoRef, { once: true, amount: 0.5 });
+
+  useEffect(() => {
+    if (!mobileVideoInView) return;
+    mobileVideoRef.current?.play().catch(() => {});
+  }, [mobileVideoInView]);
+
   return (
     <div id="intro">
       {/* Mobile: scroll-jacked pinned reveal, same 34/1,500/one-summit sequence as
           desktop, minus the frame-sequence image (never loaded on mobile). */}
-      <div ref={mobileContainerRef} className="relative bg-paper md:hidden" style={{ height: "240vh" }}>
+      <div ref={mobileContainerRef} className="relative bg-paper md:hidden" style={{ height: "420vh" }}>
         <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6 text-center">
           <motion.div
             animate={{ opacity: mobileStep >= 0 ? 1 : 0 }}
@@ -203,6 +213,18 @@ export default function ImpactIntro() {
             </motion.div>
           </motion.div>
         </div>
+      </div>
+
+      {/* Mobile: plain video reveal (no scroll-jacking), plays once on view */}
+      <div className="bg-paper px-6 pb-16 md:hidden">
+        <video
+          ref={mobileVideoRef}
+          src="/videos/hero-mobile-2-white.mp4"
+          muted
+          playsInline
+          preload="auto"
+          className="mx-auto w-full max-w-md"
+        />
       </div>
 
       {/* Desktop: scroll-jacked pinned reveal */}
