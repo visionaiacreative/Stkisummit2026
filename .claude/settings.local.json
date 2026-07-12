@@ -19,7 +19,9 @@
       "Bash(zsh -c 'echo $PATH')",
       "Bash(/bin/zsh -c 'node -v && npm -v')",
       "Bash(rm -f /Users/liorbenavi/.zshenv)",
-      "Bash(mv __TRACKED_VAR__/node-v24.18.0-darwin-arm64 /Users/liorbenavi/.local/node)"
+      "Bash(mv __TRACKED_VAR__/node-v24.18.0-darwin-arm64 /Users/liorbenavi/.local/node)",
+      "Bash(node -e ' *)",
+      "Bash(sips -g pixelWidth -g pixelHeight public/stki-logo.jpeg)"
     ]
   }
 }
