@@ -3,10 +3,10 @@
   "configurations": [
     {
       "name": "vision-dev",
-      "runtimeExecutable": "/bin/zsh",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "-c",
-        "export PATH=\"$HOME/.local/node/bin:$PATH\" && cd /Users/liorbenavi/vision && npm run dev"
+        "run",
+        "dev"
       ],
       "port": 3000
     }
