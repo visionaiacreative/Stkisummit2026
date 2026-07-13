@@ -47,7 +47,7 @@ export default function InfoGridSection() {
         <span className="h-1 w-12 rounded-full bg-brand-red" />
         <p className="text-lg leading-relaxed text-ink/60">{t.body}</p>
       </div>
-      <div className="px-6 pb-0 md:hidden">
+      <div className="pb-0 md:hidden">
         <video
           ref={mobileVideoRef}
           src="/videos/sponsorship-booth-white.mp4"
