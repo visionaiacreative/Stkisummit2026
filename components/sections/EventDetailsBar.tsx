@@ -107,7 +107,7 @@ export default function EventDetailsBar() {
         <h2 className="heading text-ink">{t.ctaLabel}</h2>
 
         <div className="mt-2 flex flex-wrap items-center justify-center gap-4">
-          {pills.map(({ key, href, external, label, value, Icon }) => (
+          {pills.map(({ key, href, external, value, Icon }) => (
             <a
               key={key}
               href={href}
@@ -119,7 +119,6 @@ export default function EventDetailsBar() {
                 <Icon />
               </span>
               <span className="flex flex-col items-start text-start">
-                {label && <span className="text-xs font-medium text-ink/50">{label}</span>}
                 <span dir="ltr" className="text-sm font-semibold text-ink">
                   {value}
                 </span>
