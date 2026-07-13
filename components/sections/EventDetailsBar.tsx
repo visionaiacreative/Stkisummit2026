@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+import { useInView } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   content,
@@ -52,6 +54,14 @@ export default function EventDetailsBar() {
   const t = content.eventBar[lang];
   const sponsorCta = content.infoGrid[lang].cta;
 
+  // Animated WebP starts playing the instant it loads, regardless of scroll
+  // position — without this, it plays its run-and-sit animation off-screen
+  // and has already settled into the final still frame by the time the user
+  // scrolls down to it. Deferring the <img> mount until the section is
+  // actually in view makes the animation start fresh when it's first seen.
+  const runSitRef = useRef<HTMLDivElement>(null);
+  const runSitInView = useInView(runSitRef, { once: true, amount: 0.4 });
+
   const pills = [
     {
       key: "whatsapp",
@@ -76,13 +86,16 @@ export default function EventDetailsBar() {
         className="pointer-events-none absolute inset-0 [background:radial-gradient(circle_at_15%_20%,color-mix(in_srgb,var(--brand-red)_10%,transparent),transparent_45%),radial-gradient(circle_at_85%_80%,color-mix(in_srgb,var(--brand-red)_10%,transparent),transparent_45%)]"
       />
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/videos/run-sit-once.webp"
-        alt=""
+      <div
+        ref={runSitRef}
         className="pointer-events-none absolute top-1/2 hidden w-[280px] -translate-y-1/2 start-6 xl:block 2xl:w-[360px] 2xl:start-12"
         style={{ aspectRatio: "640 / 621" }}
-      />
+      >
+        {runSitInView && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/videos/run-sit-once.webp" alt="" className="h-full w-full" />
+        )}
+      </div>
 
       <div className="relative mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
         <div className="flex flex-col items-center gap-3">
