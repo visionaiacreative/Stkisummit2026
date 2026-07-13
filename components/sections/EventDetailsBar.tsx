@@ -67,7 +67,6 @@ export default function EventDetailsBar() {
       key: "whatsapp",
       href: STKI_WHATSAPP_URL,
       external: true,
-      label: t.whatsappLabel,
       value: formatPhone(STKI_PHONE),
       Icon: WhatsAppIcon,
     },
