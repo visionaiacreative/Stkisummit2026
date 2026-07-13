@@ -254,15 +254,20 @@ export default function ImpactIntro() {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="absolute inset-0 flex items-center justify-center overflow-hidden bg-paper"
           >
-            <video
-              ref={desktopVideoRef}
-              src="/videos/hero-desktop-white.mp4"
-              muted
-              playsInline
-              preload="auto"
-              className="h-auto w-full max-w-6xl bg-paper md:max-w-[1400px]"
-              style={{ border: "none", outline: "none", transform: "scale(1.03)" }}
-            />
+            <div
+              className="h-auto w-full max-w-6xl md:max-w-[1400px]"
+              style={{ transform: "scale(1.03)" }}
+            >
+              <video
+                ref={desktopVideoRef}
+                src="/videos/hero-desktop-white.mp4"
+                muted
+                playsInline
+                preload="auto"
+                className="h-auto w-full bg-paper"
+                style={{ border: "none", outline: "none" }}
+              />
+            </div>
           </motion.div>
         </div>
 

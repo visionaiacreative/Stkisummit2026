@@ -45,7 +45,10 @@ export default function InfoGridSection() {
           <p className="text-xl leading-loose text-ink/60">{t.body}</p>
         </div>
 
-        <div className="relative w-full min-w-0 flex-1 self-end overflow-hidden bg-paper">
+        <div
+          className="relative w-full min-w-0 flex-1 self-end overflow-hidden bg-paper"
+          style={{ transform: "scale(1.08)", transformOrigin: "left bottom" }}
+        >
           <video
             ref={desktopVideoRef}
             src="/videos/sponsorship-booth-white-desktop.mp4"
@@ -54,7 +57,7 @@ export default function InfoGridSection() {
             playsInline
             preload="auto"
             className="block h-auto w-full bg-paper"
-            style={{ border: "none", outline: "none", transform: "scale(1.08)", transformOrigin: "left bottom" }}
+            style={{ border: "none", outline: "none" }}
           />
         </div>
       </div>
