@@ -16,7 +16,7 @@ function ArrowIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
       <path
-        d="M5 12h14M13 6l6 6-6 6"
+        d="M19 12H5M11 6l-6 6 6 6"
         stroke="currentColor"
         strokeWidth="1.7"
         strokeLinecap="round"
