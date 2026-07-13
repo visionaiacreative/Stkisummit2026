@@ -38,7 +38,7 @@ export default function InfoGridSection() {
       {/* Desktop: title + body beside the booth video (background cleaned to
           white); the video is enlarged and anchored to the bottom-start
           corner of the section. */}
-      <div className="mx-auto hidden max-w-[1600px] flex-row items-end justify-between gap-10 pt-24 pb-0 ps-16 pe-0 md:flex">
+      <div className="mx-auto hidden max-w-[1600px] flex-row items-end justify-between gap-20 pt-24 pb-0 ps-16 pe-0 md:flex">
         <div className="flex w-full max-w-xs shrink-0 flex-col items-start gap-6 pb-24 text-start">
           <h2 className="heading text-ink">{t.title}</h2>
           <span className="h-1 w-12 rounded-full bg-brand-red" />
@@ -47,7 +47,7 @@ export default function InfoGridSection() {
 
         <div
           className="relative w-full min-w-0 flex-1 self-end overflow-hidden bg-paper"
-          style={{ transform: "scale(1.08)", transformOrigin: "left bottom" }}
+          style={{ transform: "scale(1.05)", transformOrigin: "left bottom" }}
         >
           <video
             ref={desktopVideoRef}
