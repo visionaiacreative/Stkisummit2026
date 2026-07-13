@@ -4,23 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView, useScroll, useMotionValueEvent } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 import { content } from "@/lib/content";
-import { useFrameSequence } from "@/lib/useFrameSequence";
-import FrameLoadIndicator from "@/components/ui/FrameLoadIndicator";
 
 const START_THRESHOLD = 0.02;
 const STEP_THRESHOLDS = [0.15, 0.28, 0.4];
-const FRAMES_START = STEP_THRESHOLDS[2];
-const TOTAL_FRAMES = 1000;
 
 const MOBILE_START_THRESHOLD = 0.06;
 const MOBILE_STEP_THRESHOLDS = [0.36, 0.64];
 
-function frameSrc(index: number) {
-  return `/hero-2/frame-${String(index).padStart(4, "0")}.webp`;
-}
-
 function getStep(progress: number) {
-  if (progress < START_THRESHOLD) return -1;
+  if (!Number.isFinite(progress) || progress < START_THRESHOLD) return -1;
   if (progress < STEP_THRESHOLDS[0]) return 0;
   if (progress < STEP_THRESHOLDS[1]) return 1;
   if (progress < STEP_THRESHOLDS[2]) return 2;
@@ -39,8 +31,6 @@ export default function ImpactIntro() {
   const t = content.impact[lang];
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const currentFrameRef = useRef(0);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -49,35 +39,25 @@ export default function ImpactIntro() {
 
   const [step, setStep] = useState(-1);
 
-  // hero-2 frames only render on desktop (mobile uses the video below), so
-  // skip loading them entirely on mobile viewports, matching prior behavior.
-  const [desktopSequenceEnabled] = useState(
-    () => typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches,
-  );
-  const { progress: loadProgress, ready: framesReady, frontierRef } = useFrameSequence({
-    frameSrc,
-    totalFrames: TOTAL_FRAMES,
-    containerRef,
-    rootMargin: "600px 0px",
-    enabled: desktopSequenceEnabled,
-  });
-
-  function applyFrame(scrollProgress: number) {
-    const img = imgRef.current;
-    if (!img) return;
-    const frameProgress = Math.min(1, Math.max(0, (scrollProgress - FRAMES_START) / (1 - FRAMES_START)));
-    const targetFrame = Math.min(TOTAL_FRAMES, Math.max(1, Math.round(frameProgress * (TOTAL_FRAMES - 1)) + 1));
-    const frameIndex = Math.min(targetFrame, frontierRef.current);
-    if (frameIndex !== currentFrameRef.current) {
-      currentFrameRef.current = frameIndex;
-      img.src = frameSrc(frameIndex);
-    }
-  }
-
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     setStep(getStep(latest));
-    applyFrame(latest);
   });
+
+  // Desktop: plain (non-scroll-jacked) video revealed once the stat reveal
+  // finishes. Restarts from frame 0 every time the user arrives at this step
+  // (not just once ever) — a fast scroll can cross the step-3 threshold and
+  // carry on past the section before the ~5s video finishes playing in the
+  // background; without a reset, scrolling back later would just show it
+  // frozen on the last frame instead of actually playing.
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (step !== 3) return;
+    const video = desktopVideoRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    video.play().catch(() => {});
+  }, [step]);
 
   // Mobile: same three-step stat reveal as desktop (34 years / 1,500 execs / one
   // summit), pinned over its own scroll range, without the heavy frame sequence.
@@ -110,11 +90,13 @@ export default function ImpactIntro() {
       <div ref={mobileContainerRef} className="relative bg-paper md:hidden" style={{ height: "420vh" }}>
         <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6 text-center">
           <motion.div
+            initial={{ opacity: 0 }}
             animate={{ opacity: mobileStep >= 0 ? 1 : 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="flex flex-col items-center justify-center gap-3"
           >
             <motion.p
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: mobileStep >= 0 ? 1 : 0, y: mobileStep >= 0 ? 0 : 16 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-4xl leading-tight font-semibold text-ink"
@@ -122,6 +104,7 @@ export default function ImpactIntro() {
               <span className="text-brand-red">34</span> {t.yearsLabel}
             </motion.p>
             <motion.p
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: mobileStep >= 1 ? 1 : 0, y: mobileStep >= 1 ? 0 : 16 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-4xl leading-tight font-semibold text-ink"
@@ -129,6 +112,7 @@ export default function ImpactIntro() {
               <span className="text-brand-red">1,500</span> {t.decisionMakersLabel}
             </motion.p>
             <motion.p
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: mobileStep >= 2 ? 1 : 0, y: mobileStep >= 2 ? 0 : 16 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-5xl leading-tight font-extrabold text-ink"
@@ -223,20 +207,23 @@ export default function ImpactIntro() {
           muted
           playsInline
           preload="auto"
-          className="mx-auto w-full max-w-md"
+          className="mx-auto w-full max-w-md bg-paper"
         />
       </div>
 
-      {/* Desktop: scroll-jacked pinned reveal */}
+      {/* Desktop: scroll-jacked pinned reveal, text then a plain (non-scrubbed)
+          hero video that plays once and freezes on its last frame. */}
       <div ref={containerRef} className="relative hidden bg-paper md:block md:h-[260vh]">
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6 text-center">
         <div className="relative h-full w-full">
           <motion.div
+            initial={{ opacity: 0 }}
             animate={{ opacity: step < 3 ? 1 : 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="absolute inset-0 flex flex-col items-center justify-center gap-3 md:gap-4"
           >
             <motion.p
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: step >= 0 ? 1 : 0, y: step >= 0 ? 0 : 16 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-4xl leading-tight font-semibold text-ink sm:text-5xl md:text-6xl"
@@ -244,6 +231,7 @@ export default function ImpactIntro() {
               <span className="text-brand-red">34</span> {t.yearsLabel}
             </motion.p>
             <motion.p
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: step >= 1 ? 1 : 0, y: step >= 1 ? 0 : 16 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-4xl leading-tight font-semibold text-ink sm:text-5xl md:text-6xl"
@@ -251,6 +239,7 @@ export default function ImpactIntro() {
               <span className="text-brand-red">1,500</span> {t.decisionMakersLabel}
             </motion.p>
             <motion.p
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: step >= 2 ? 1 : 0, y: step >= 2 ? 0 : 16 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-5xl leading-tight font-extrabold text-ink sm:text-6xl md:text-7xl"
@@ -260,25 +249,20 @@ export default function ImpactIntro() {
           </motion.div>
 
           <motion.div
+            initial={{ opacity: 0 }}
             animate={{ opacity: step === 3 ? 1 : 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 flex items-center justify-center overflow-hidden bg-paper"
           >
-            <img
-              ref={imgRef}
-              src={frameSrc(1)}
-              alt=""
-              className="h-auto w-full max-w-4xl md:max-w-6xl"
-              style={{
-                maskImage:
-                  "linear-gradient(to right, transparent, black 1.5%, black 98.5%, transparent), linear-gradient(to bottom, transparent, black 1.5%, black 98.5%, transparent)",
-                maskComposite: "intersect",
-                WebkitMaskImage:
-                  "linear-gradient(to right, transparent, black 1.5%, black 98.5%, transparent), linear-gradient(to bottom, transparent, black 1.5%, black 98.5%, transparent)",
-                WebkitMaskComposite: "source-in",
-              }}
+            <video
+              ref={desktopVideoRef}
+              src="/videos/hero-desktop-white.mp4"
+              muted
+              playsInline
+              preload="auto"
+              className="h-auto w-full max-w-6xl bg-paper md:max-w-[1400px]"
+              style={{ border: "none", outline: "none", transform: "scale(1.03)" }}
             />
-            <FrameLoadIndicator progress={loadProgress} visible={step === 3 && !framesReady} />
           </motion.div>
         </div>
 

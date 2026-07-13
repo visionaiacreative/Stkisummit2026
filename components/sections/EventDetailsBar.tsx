@@ -65,7 +65,6 @@ export default function EventDetailsBar() {
       key: "email",
       href: `mailto:${SPONSOR_COORDINATION_EMAIL}`,
       external: false,
-      label: t.emailLabel,
       value: SPONSOR_COORDINATION_EMAIL,
       Icon: MailIcon,
     },
@@ -108,7 +107,7 @@ export default function EventDetailsBar() {
                 <Icon />
               </span>
               <span className="flex flex-col items-start text-start">
-                <span className="text-xs font-medium text-ink/50">{label}</span>
+                {label && <span className="text-xs font-medium text-ink/50">{label}</span>}
                 <span dir="ltr" className="text-sm font-semibold text-ink">
                   {value}
                 </span>

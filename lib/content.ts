@@ -200,7 +200,6 @@ export const content = {
       eyebrow: "דברו איתנו",
       ctaLabel: "לפרטים וליצירת קשר",
       whatsappLabel: "וואטסאפ",
-      emailLabel: "מייל",
     },
     en: {
       dateLabel: "Date",
@@ -210,7 +209,6 @@ export const content = {
       eyebrow: "Talk to us",
       ctaLabel: "Details & Get in Touch",
       whatsappLabel: "WhatsApp",
-      emailLabel: "Email",
     },
   },
   visionCredit: {

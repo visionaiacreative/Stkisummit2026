@@ -58,7 +58,6 @@ export default function VisionCredit() {
     {
       key: "email",
       Icon: MailIcon,
-      label: "Mail",
       value: VISION_STUDIO_EMAIL,
       href: `mailto:${VISION_STUDIO_EMAIL}`,
       external: false,
@@ -81,18 +80,15 @@ export default function VisionCredit() {
                 <Icon />
               </span>
               {value ? (
-                <span className="flex min-w-0 flex-col items-start">
-                  <span className="text-xs text-paper/45">{label}</span>
-                  <span className="w-full text-sm font-medium break-words text-paper/85 transition-colors group-hover:text-white">
-                    {value.includes("@") ? (
-                      <>
-                        {value.split("@")[0]}@<wbr />
-                        {value.split("@")[1]}
-                      </>
-                    ) : (
-                      value
-                    )}
-                  </span>
+                <span className="w-full min-w-0 text-sm font-medium break-words text-paper/85 transition-colors group-hover:text-white">
+                  {value.includes("@") ? (
+                    <>
+                      {value.split("@")[0]}@<wbr />
+                      {value.split("@")[1]}
+                    </>
+                  ) : (
+                    value
+                  )}
                 </span>
               ) : (
                 <span className="text-sm font-medium text-paper/85 transition-colors group-hover:text-white">
@@ -105,14 +101,14 @@ export default function VisionCredit() {
 
         <div className="order-2 hidden h-36 w-px shrink-0 bg-paper/10 md:block" />
 
-        <div className="order-1 flex flex-col items-center gap-2 text-center md:order-3 md:items-start md:text-start">
+        <div className="order-1 flex flex-col items-center gap-2 text-center md:order-3">
           <span className="text-[13px] tracking-[0.2em] text-paper/40 uppercase">{t.builtBy}</span>
 
           <span dir="ltr" className="text-2xl font-bold tracking-wide md:text-3xl">
             VISION AI STUDIO<sup className="text-sm">©</sup>
           </span>
 
-          <div dir="ltr" className="mt-1 flex flex-col items-center gap-1 md:items-start">
+          <div dir="ltr" className="mt-1 flex flex-col items-center gap-1">
             <span className="text-xs font-semibold tracking-[0.25em] text-paper/50 uppercase">
               Luxury Digital Studio
             </span>
